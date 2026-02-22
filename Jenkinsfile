@@ -1,30 +1,39 @@
 pipeline {
     agent any
 
+    environment {
+        SERVER_IP = "104.211.55.89"
+    }
+
     stages {
 
-        stage('Pull from GitHub') {
+        stage('Pull Code') {
             steps {
-                git branch: 'main',
-                url: 'https://github.com/akhilkrishna08/devops-project.git'
+                checkout scm
             }
         }
 
-        stage('Deploy Docker Compose') {
+        stage('Deploy to Azure VM') {
             steps {
-                sh '''
-                cd $WORKSPACE
-                docker-compose down || true
-                docker-compose pull
-                docker-compose up -d
-                '''
+                sshagent(['azure-vm-ssh']) {
+                    sh """
+                    ssh -o StrictHostKeyChecking=no azureuser@${104.211.55.89} '
+                        cd /home/azureuser/docker-compose.yml &&
+                        docker-compose down || true &&
+                        docker-compose up -d
+                    '
+                    """
+                }
             }
         }
+    }
 
-        stage('Post-build Message') {
-            steps {
-                echo "Deployment Successful!"
-            }
+    post {
+        success {
+            echo 'Deployment Successful!'
+        }
+        failure {
+            echo 'Deployment Failed!'
         }
     }
 }

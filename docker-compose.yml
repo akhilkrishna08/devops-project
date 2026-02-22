@@ -24,18 +24,23 @@ services:
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
       WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
     depends_on:
       - db
 
   wpcli:
     image: wordpress:cli
     depends_on:
+      - db
       - wordpress
+    volumes:
+      - wp_data:/var/www/html
     entrypoint: >
       sh -c "
-      sleep 20 &&
+      sleep 40 &&
       wp core install
-      --url=http://104.211.55.89
+      --url=http://104.211.55.92
       --title='My WordPress Site'
       --admin_user=admin
       --admin_password=admin123
@@ -45,3 +50,4 @@ services:
 
 volumes:
   db_data:
+  wp_data:

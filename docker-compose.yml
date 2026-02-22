@@ -35,7 +35,7 @@ services:
       sh -c "
       sleep 20 &&
       wp core install
-      --url=http://localhost
+      --url=http://104.211.55.89
       --title='My WordPress Site'
       --admin_user=admin
       --admin_password=admin123

@@ -1,9 +1,9 @@
 version: '3.8'
 
 services:
+
   db:
     image: mysql:5.7
-    container_name: mysql
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: rootpass
@@ -15,12 +15,11 @@ services:
 
   wordpress:
     image: wordpress:latest
-    container_name: wordpress
     restart: always
     ports:
       - "80:80"
     environment:
-      WORDPRESS_DB_HOST: db:3306
+      WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
       WORDPRESS_DB_NAME: wordpress
@@ -36,16 +35,27 @@ services:
       - wordpress
     volumes:
       - wp_data:/var/www/html
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_DB_NAME: wordpress
     entrypoint: >
       sh -c "
-      sleep 40 &&
-      wp core install
-      --url=http://104.211.55.92
-      --title='My WordPress Site'
-      --admin_user=admin
-      --admin_password=admin123
-      --admin_email=admin@gmail.com
-      --allow-root
+      until wp db check --allow-root; do
+        echo 'Waiting for database...';
+        sleep 5;
+      done &&
+      if ! wp core is-installed --allow-root; then
+        wp core install \
+          --url=http://104.211.55.92 \
+          --title='My WordPress Site' \
+          --admin_user=admin \
+          --admin_password=admin123 \
+          --admin_email=admin@gmail.com \
+          --skip-email \
+          --allow-root;
+      fi
       "
 
 volumes:

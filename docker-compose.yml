@@ -1,33 +1,3 @@
-version: '3.8'
-
-services:
-
-  db:
-    image: mysql:5.7
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: rootpass
-      MYSQL_DATABASE: wordpress
-      MYSQL_USER: wpuser
-      MYSQL_PASSWORD: wppass
-    volumes:
-      - db_data:/var/lib/mysql
-
-  wordpress:
-    image: wordpress:latest
-    restart: always
-    ports:
-      - "80:80"
-    environment:
-      WORDPRESS_DB_HOST: db
-      WORDPRESS_DB_USER: wpuser
-      WORDPRESS_DB_PASSWORD: wppass
-      WORDPRESS_DB_NAME: wordpress
-    volumes:
-      - wp_data:/var/www/html
-    depends_on:
-      - db
-
   wpcli:
     image: wordpress:cli
     depends_on:
@@ -40,9 +10,10 @@ services:
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
       WORDPRESS_DB_NAME: wordpress
+      MYSQL_CLIENT_FLAGS: "--ssl-mode=DISABLED"
     command: >
       sh -c "
-      until wp db check --allow-root; do
+      until wp db check --allow-root --skip-ssl; do
         echo 'Waiting for database...';
         sleep 5;
       done &&
@@ -57,7 +28,3 @@ services:
           --allow-root;
       fi
       "
-
-volumes:
-  db_data:
-  wp_data:

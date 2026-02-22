@@ -40,7 +40,7 @@ services:
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
       WORDPRESS_DB_NAME: wordpress
-    entrypoint: >
+    command: >
       sh -c "
       until wp db check --allow-root; do
         echo 'Waiting for database...';

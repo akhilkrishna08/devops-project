@@ -1,4 +1,34 @@
-wpcli:
+version: '3.8'
+
+services:
+
+  db:
+    image: mysql:5.7
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: wpuser
+      MYSQL_PASSWORD: wppass
+    volumes:
+      - db_data:/var/lib/mysql
+
+  wordpress:
+    image: wordpress:latest
+    restart: always
+    ports:
+      - "80:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: wpuser
+      WORDPRESS_DB_PASSWORD: wppass
+      WORDPRESS_DB_NAME: wordpress
+    volumes:
+      - wp_data:/var/www/html
+    depends_on:
+      - db
+
+  wpcli:
     image: wordpress:cli
     depends_on:
       - db
@@ -10,18 +40,13 @@ wpcli:
       WORDPRESS_DB_USER: wpuser
       WORDPRESS_DB_PASSWORD: wppass
       WORDPRESS_DB_NAME: wordpress
-    user: x:x # Run as the same user as the wordpress image to avoid permission issues
     entrypoint: >
-      /bin/sh -c "
-      # 1. Wait for MySQL to be ready
+      sh -c "
       until wp db check --allow-root; do
-        echo 'Waiting for database...'
-        sleep 3
-      done
-
-      # 2. Check if WP is already installed
+        echo 'Waiting for database...';
+        sleep 5;
+      done &&
       if ! wp core is-installed --allow-root; then
-        echo 'Installing WordPress...'
         wp core install \
           --url=http://104.211.55.92 \
           --title='My WordPress Site' \
@@ -29,10 +54,10 @@ wpcli:
           --admin_password=admin123 \
           --admin_email=admin@gmail.com \
           --skip-email \
-          --allow-root
-        
-        echo 'WordPress installation complete.'
-      else
-        echo 'WordPress is already installed. Skipping.'
+          --allow-root;
       fi
       "
+
+volumes:
+  db_data:
+  wp_data:

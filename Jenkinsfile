@@ -17,7 +17,7 @@ pipeline {
             steps {
                 sshagent(['azure-vm-ssh']) {
                     sh """
-                    ssh -o StrictHostKeyChecking=no azureuser@104.211.55.89
+                    ssh -o StrictHostKeyChecking=no azureuser@${SERVER_IP} '
                         cd /home/azureuser/docker-compose.yml &&
                         docker-compose down || true &&
                         docker-compose up -d
